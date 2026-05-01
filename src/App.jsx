@@ -45,6 +45,7 @@ export default function App() {
   const [authLoading, setAuthLoading] = useState(true);
   const [dataLoading, setDataLoading] = useState(false);
   const [dataError, setDataError] = useState("");
+  const [dataStatus, setDataStatus] = useState("");
   const guestDataRef = useRef({ savedFragments: [], savedReflections: [], savedActions: [], cartItems: [] });
 
   const selectedBook = useMemo(() => books.find((book) => book.id === selectedBookId) || books[0], [selectedBookId]);
@@ -91,6 +92,7 @@ export default function App() {
     async function hydrateMemberData() {
       setDataLoading(true);
       setDataError("");
+      setDataStatus("");
 
       try {
         await syncGuestData(user.id, guestDataRef.current);
@@ -136,6 +138,8 @@ export default function App() {
   }
 
   async function addToCart(item) {
+    const alreadyInCart = cartItems.some((previousItem) => previousItem.id === item.id && previousItem.category === item.category);
+
     setCartItems((previousItems) => {
       if (previousItems.some((previousItem) => previousItem.id === item.id && previousItem.category === item.category)) {
         return previousItems;
@@ -149,10 +153,14 @@ export default function App() {
     if (user?.id) {
       try {
         await upsertCartItem(user.id, item);
+        setDataError("");
+        setDataStatus(alreadyInCart ? "Ce produit était déjà dans ton panier sauvegardé." : "Panier sauvegardé dans ton compte.");
       } catch (error) {
-        setDataError("Le panier n’a pas pu être sauvegardé.");
+        setDataError(`Le panier n’a pas pu être sauvegardé : ${error.message}`);
         console.error(error);
       }
+    } else {
+      setDataStatus("Panier gardé en mode invité. Connecte-toi pour le conserver.");
     }
   }
 
@@ -162,8 +170,10 @@ export default function App() {
     if (user?.id) {
       try {
         await deleteCartItem(user.id, id, category);
+        setDataError("");
+        setDataStatus("Panier mis à jour dans ton compte.");
       } catch (error) {
-        setDataError("Le panier n’a pas pu être mis à jour.");
+        setDataError(`Le panier n’a pas pu être mis à jour : ${error.message}`);
         console.error(error);
       }
     }
@@ -180,8 +190,10 @@ export default function App() {
     if (user?.id) {
       try {
         await upsertSavedFragment(user.id, fragment);
+        setDataError("");
+        setDataStatus("Fragment sauvegardé dans ton compte.");
       } catch (error) {
-        setDataError("Le fragment n’a pas pu être sauvegardé.");
+        setDataError(`Le fragment n’a pas pu être sauvegardé : ${error.message}`);
         console.error(error);
       }
     }
@@ -193,8 +205,10 @@ export default function App() {
     if (user?.id) {
       try {
         await insertSavedReflection(user.id, reflection);
+        setDataError("");
+        setDataStatus("Réponse sauvegardée dans ton compte.");
       } catch (error) {
-        setDataError("La réponse n’a pas pu être sauvegardée.");
+        setDataError(`La réponse n’a pas pu être sauvegardée : ${error.message}`);
         console.error(error);
       }
     }
@@ -206,8 +220,10 @@ export default function App() {
     if (user?.id) {
       try {
         await insertSavedAction(user.id, action);
+        setDataError("");
+        setDataStatus("Action sauvegardée dans ton compte.");
       } catch (error) {
-        setDataError("L’action n’a pas pu être sauvegardée.");
+        setDataError(`L’action n’a pas pu être sauvegardée : ${error.message}`);
         console.error(error);
       }
     }
@@ -271,12 +287,14 @@ export default function App() {
           savedFragments={savedFragments}
           savedReflections={savedReflections}
           savedActions={savedActions}
+          cartItems={cartItems}
           onNavigate={navigate}
           user={user}
           onSignOut={signOut}
           authLoading={authLoading}
           dataLoading={dataLoading}
           dataError={dataError}
+          dataStatus={dataStatus}
         />
       ) : null}
       {currentPage === "about" ? <AboutPage /> : null}

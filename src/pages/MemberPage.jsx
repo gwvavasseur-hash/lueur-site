@@ -1,6 +1,6 @@
 import PageShell from "../components/PageShell";
 
-function MemberPage({ savedFragments, savedReflections, savedActions, onNavigate, user, onSignOut, authLoading, dataLoading, dataError }) {
+function MemberPage({ savedFragments, savedReflections, savedActions, cartItems, onNavigate, user, onSignOut, authLoading, dataLoading, dataError, dataStatus }) {
   return (
     <PageShell eyebrow="lueur member" title="Ton espace pour garder ce qui mérite de rester.">
       <div className="mx-auto mb-6 max-w-7xl">
@@ -14,6 +14,7 @@ function MemberPage({ savedFragments, savedReflections, savedActions, onNavigate
           )}
           {authLoading ? <p className="mt-2 text-[#68645C]">Vérification de ta connexion...</p> : null}
           {dataLoading ? <p className="mt-2 text-[#68645C]">Chargement de tes données...</p> : null}
+          {dataStatus ? <p className="mt-2 text-[#4F4B44]">{dataStatus}</p> : null}
           {dataError ? <p className="mt-2 text-[#7A2E2E]">{dataError}</p> : null}
         </div>
       </div>
@@ -44,6 +45,18 @@ function MemberPage({ savedFragments, savedReflections, savedActions, onNavigate
               <div key={action.id} className="border border-[#0B0A12]/10 bg-white/45 p-4">
                 <p className="text-xs uppercase tracking-[0.24em] text-[#68645C]">{action.status}</p>
                 <p className="mt-3 font-serif text-2xl leading-tight tracking-[-0.04em]">{action.text}</p>
+              </div>
+            ))}
+          </MemberModule>
+
+          <MemberModule title="Panier sauvegardé" label="module 04" empty="Aucun produit sauvegardé dans ton panier.">
+            {cartItems.map((item) => (
+              <div key={`${item.category}-${item.id}`} className="border border-[#0B0A12]/10 bg-white/45 p-4">
+                <p className="text-xs uppercase tracking-[0.24em] text-[#68645C]">{item.type}</p>
+                <div className="mt-3 flex justify-between gap-4">
+                  <p className="font-serif text-2xl leading-tight tracking-[-0.04em]">{item.title}</p>
+                  <p className="shrink-0">{item.price}</p>
+                </div>
               </div>
             ))}
           </MemberModule>

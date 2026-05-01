@@ -110,35 +110,40 @@ export async function insertSavedReflection(userId, reflection) {
 export async function insertSavedAction(userId, action) {
   assertSupabase();
 
+  await throwIfError(await supabase.from("saved_actions").delete().eq("user_id", userId).eq("local_id", action.id));
+
   return throwIfError(
-    await supabase.from("saved_actions").upsert(
-      {
-        user_id: userId,
-        local_id: action.id,
-        book: action.book,
-        text: action.text,
-        status: action.status,
-      },
-      { onConflict: "user_id,local_id" },
-    ),
+    await supabase.from("saved_actions").insert({
+      user_id: userId,
+      local_id: action.id,
+      book: action.book,
+      text: action.text,
+      status: action.status,
+    }),
   );
 }
 
 export async function upsertCartItem(userId, item) {
   assertSupabase();
 
+  await throwIfError(
+    await supabase
+      .from("cart_items")
+      .delete()
+      .eq("user_id", userId)
+      .eq("item_id", item.id)
+      .eq("category", item.category),
+  );
+
   return throwIfError(
-    await supabase.from("cart_items").upsert(
-      {
-        user_id: userId,
-        item_id: item.id,
-        category: item.category,
-        title: item.title,
-        price: item.price,
-        type: item.type,
-      },
-      { onConflict: "user_id,item_id,category" },
-    ),
+    await supabase.from("cart_items").insert({
+      user_id: userId,
+      item_id: item.id,
+      category: item.category,
+      title: item.title,
+      price: item.price,
+      type: item.type,
+    }),
   );
 }
 
