@@ -102,7 +102,7 @@ export default function App() {
   }
 
   return (
-    <main className="min-h-screen bg-[#FCFCF7] text-[#0B0A12] selection:bg-[#E7DFC9] selection:text-[#0B0A12]">
+    <main className="min-h-screen max-w-full overflow-x-hidden bg-[#FCFCF7] text-[#0B0A12] selection:bg-[#E7DFC9] selection:text-[#0B0A12]">
       <style>{`
         @keyframes lueurReveal {
           from { opacity: 0; transform: translateY(22px); filter: blur(8px); }

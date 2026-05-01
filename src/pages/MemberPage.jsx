@@ -3,7 +3,7 @@ import PageShell from "../components/PageShell";
 function MemberPage({ savedFragments, savedReflections, savedActions, onNavigate }) {
   return (
     <PageShell eyebrow="lueur member" title="Ton espace pour garder ce qui mérite de rester.">
-      <div className="mx-auto grid max-w-7xl gap-5 lg:grid-cols-[1.05fr_1.05fr_0.9fr]">
+      <div className="mx-auto grid max-w-7xl min-w-0 gap-5 lg:grid-cols-[1.05fr_1.05fr_0.9fr]">
         <MemberModule title="Fragments enregistrés" label="module 01" empty="Aucun fragment enregistré pour l’instant.">
           {savedFragments.map((fragment) => (
             <div key={fragment.id} className="border border-[#0B0A12]/10 bg-white/45 p-4">
@@ -23,7 +23,7 @@ function MemberPage({ savedFragments, savedReflections, savedActions, onNavigate
           ))}
         </MemberModule>
 
-        <div className="space-y-5">
+        <div className="min-w-0 space-y-5">
           <MemberModule title="Actions engagées" label="module 03" empty="Aucune action enregistrée pour l’instant.">
             {savedActions.map((action) => (
               <div key={action.id} className="border border-[#0B0A12]/10 bg-white/45 p-4">
@@ -33,12 +33,12 @@ function MemberPage({ savedFragments, savedReflections, savedActions, onNavigate
             ))}
           </MemberModule>
 
-          <div className="border border-white/45 bg-[#0B0A12]/92 p-6 text-[#FCFCF7] shadow-[0_18px_70px_rgba(10,10,18,0.09)] backdrop-blur-xl">
-            <p className="text-xs uppercase tracking-[0.28em] text-[#FCFCF7]/55">compte invité</p>
-            <h3 className="mt-5 font-serif text-3xl leading-tight tracking-[-0.05em]">Crée un compte pour retrouver tes traces plus tard.</h3>
+          <div className="min-w-0 border border-white/45 bg-[#0B0A12]/92 p-5 text-[#FCFCF7] shadow-[0_18px_70px_rgba(10,10,18,0.09)] backdrop-blur-xl md:p-6">
+            <p className="text-[10px] uppercase tracking-[0.2em] text-[#FCFCF7]/55 md:text-xs md:tracking-[0.28em]">compte invité</p>
+            <h3 className="mt-5 font-serif text-2xl leading-tight tracking-[-0.05em] md:text-3xl">Crée un compte pour retrouver tes traces plus tard.</h3>
             <div className="mt-8 grid gap-2">
-              <button type="button" className="bg-[#FCFCF7] px-5 py-3 text-sm uppercase tracking-[0.18em] text-[#0B0A12]">Créer un compte</button>
-              <button type="button" onClick={() => onNavigate("lueur")} className="border border-[#FCFCF7]/20 px-5 py-3 text-sm uppercase tracking-[0.18em]">Recevoir une lueur</button>
+              <button type="button" className="bg-[#FCFCF7] px-4 py-3 text-xs uppercase tracking-[0.12em] text-[#0B0A12] md:px-5 md:text-sm md:tracking-[0.18em]">Créer un compte</button>
+              <button type="button" onClick={() => onNavigate("lueur")} className="border border-[#FCFCF7]/20 px-4 py-3 text-xs uppercase tracking-[0.12em] md:px-5 md:text-sm md:tracking-[0.18em]">Recevoir une lueur</button>
             </div>
           </div>
         </div>
@@ -51,10 +51,10 @@ function MemberModule({ label, title, empty, children }) {
   const hasItems = Array.isArray(children) ? children.length > 0 : Boolean(children);
 
   return (
-    <section className="min-h-[430px] border border-white/45 bg-white/42 p-6 shadow-[0_18px_70px_rgba(10,10,18,0.04)] backdrop-blur-xl">
-      <p className="text-xs uppercase tracking-[0.28em] text-[#68645C]">{label}</p>
-      <h2 className="mt-5 font-serif text-4xl leading-tight tracking-[-0.05em]">{title}</h2>
-      <div className="mt-8 space-y-3">
+    <section className="min-h-[340px] min-w-0 border border-white/45 bg-white/42 p-5 shadow-[0_18px_70px_rgba(10,10,18,0.04)] backdrop-blur-xl md:min-h-[430px] md:p-6">
+      <p className="text-[10px] uppercase tracking-[0.2em] text-[#68645C] md:text-xs md:tracking-[0.28em]">{label}</p>
+      <h2 className="mt-5 font-serif text-3xl leading-tight tracking-[-0.05em] md:text-4xl">{title}</h2>
+      <div className="mt-6 space-y-3 md:mt-8">
         {hasItems ? children : <p className="leading-7 text-[#55524B]">{empty}</p>}
       </div>
     </section>
