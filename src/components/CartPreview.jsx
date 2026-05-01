@@ -2,7 +2,7 @@ function CartPreview({ open, cartItems, total, onNavigate, onRemove }) {
   if (!open) return null;
 
   return (
-    <aside className="fixed right-4 top-[86px] z-40 w-[min(390px,calc(100vw-32px))] border border-white/45 bg-white/42 p-5 shadow-[0_30px_100px_rgba(10,10,18,0.14)] backdrop-blur-2xl md:right-8">
+    <aside className="fixed right-4 top-[94px] z-40 w-[min(390px,calc(100vw-32px))] border border-white/45 bg-white/42 p-5 shadow-[0_30px_100px_rgba(10,10,18,0.14)] backdrop-blur-2xl md:right-8">
       <div className="flex items-start justify-between gap-6 border-b border-[#0B0A12]/10 pb-4">
         <div>
           <p className="text-xs uppercase tracking-[0.3em] text-[#68645C]">panier</p>

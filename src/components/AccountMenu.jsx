@@ -2,7 +2,7 @@ function AccountMenu({ open, onNavigate }) {
   if (!open) return null;
 
   return (
-    <div className="fixed left-[64px] top-[86px] z-40 w-[min(340px,calc(100vw-80px))] border border-white/45 bg-white/42 p-5 shadow-[0_30px_100px_rgba(10,10,18,0.12)] backdrop-blur-2xl md:left-[88px]">
+    <div className="fixed right-[74px] top-[94px] z-40 w-[min(340px,calc(100vw-92px))] border border-white/45 bg-white/42 p-5 shadow-[0_30px_100px_rgba(10,10,18,0.12)] backdrop-blur-2xl md:right-[96px]">
       <p className="text-xs uppercase tracking-[0.3em] text-[#68645C]">compte</p>
       <h3 className="mt-3 font-serif text-3xl tracking-[-0.05em] text-[#0B0A12]">Garder tes traces.</h3>
       <div className="mt-6 grid gap-2">

@@ -13,12 +13,15 @@ import { reviews } from "./data/reviews";
 import AboutPage from "./pages/AboutPage";
 import BookPage from "./pages/BookPage";
 import CheckoutPage from "./pages/CheckoutPage";
+import ContactPage from "./pages/ContactPage";
 import DigitalPage from "./pages/DigitalPage";
 import FragmentsPage from "./pages/FragmentsPage";
 import HomePage from "./pages/HomePage";
 import LibraryPage from "./pages/LibraryPage";
+import LegalPage from "./pages/LegalPage";
 import LueurGeneratorPage from "./pages/LueurGeneratorPage";
 import MemberPage from "./pages/MemberPage";
+import PrivacyPage from "./pages/PrivacyPage";
 import { parsePrice } from "./utils/price";
 
 export function validateBooks(items = books) {
@@ -138,6 +141,9 @@ export default function App() {
       {currentPage === "digital" ? <DigitalPage onAddToCart={addToCart} /> : null}
       {currentPage === "member" ? <MemberPage savedFragments={savedFragments} savedReflections={savedReflections} savedActions={savedActions} onNavigate={navigate} /> : null}
       {currentPage === "about" ? <AboutPage /> : null}
+      {currentPage === "contact" ? <ContactPage /> : null}
+      {currentPage === "legal" ? <LegalPage onNavigate={navigate} /> : null}
+      {currentPage === "privacy" ? <PrivacyPage onNavigate={navigate} /> : null}
       {currentPage === "book" ? <BookPage book={selectedBook} onNavigate={navigate} onAddToCart={addToCart} /> : null}
       {currentPage === "checkout" ? <CheckoutPage cartItems={cartItems} total={cartTotal} onNavigate={navigate} onRemove={removeFromCart} /> : null}
 

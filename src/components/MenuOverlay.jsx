@@ -4,7 +4,7 @@ function MenuOverlay({ open, onNavigate }) {
   if (!open) return null;
 
   return (
-    <div className="fixed left-4 top-[86px] z-40 w-[min(420px,calc(100vw-32px))] border border-white/45 bg-white/38 p-4 shadow-[0_30px_100px_rgba(10,10,18,0.12)] backdrop-blur-2xl md:left-8">
+    <div className="fixed left-4 top-[94px] z-40 w-[min(420px,calc(100vw-32px))] border border-white/45 bg-white/38 p-4 shadow-[0_30px_100px_rgba(10,10,18,0.12)] backdrop-blur-2xl md:left-8">
       <div className="mb-4 border-b border-[#0B0A12]/10 pb-4">
         <p className="text-xs uppercase tracking-[0.3em] text-[#68645C]">menu</p>
         <p className="mt-2 max-w-xs font-serif text-2xl leading-tight tracking-[-0.04em] text-[#0B0A12]">

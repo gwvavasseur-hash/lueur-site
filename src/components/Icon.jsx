@@ -1,4 +1,4 @@
-function Icon({ name, size = 20, className = "" }) {
+function Icon({ name, size = 22, className = "" }) {
   const commonProps = {
     width: size,
     height: size,

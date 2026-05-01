@@ -9,7 +9,7 @@ function Header({ currentPage, onNavigate, menuOpen, setMenuOpen, cartOpen, setC
 
   return (
     <header className="fixed left-0 top-0 z-50 w-full border-b border-white/35 bg-white/45 shadow-[0_12px_55px_rgba(10,10,18,0.045)] backdrop-blur-2xl">
-      <div className="grid h-[74px] grid-cols-[1fr_auto_1fr] items-center px-4 md:px-8">
+      <div className="grid h-[82px] grid-cols-[1fr_auto_1fr] items-center px-4 md:px-8">
         <div className="flex items-center gap-2">
           <button
             type="button"
@@ -19,10 +19,22 @@ function Header({ currentPage, onNavigate, menuOpen, setMenuOpen, cartOpen, setC
               setAccountOpen(false);
               setCartOpen(false);
             }}
-            className="p-2 text-[#0B0A12]/80 transition hover:bg-white/40 hover:text-[#0B0A12]"
+            className="p-3 text-[#0B0A12]/80 transition hover:bg-white/40 hover:text-[#0B0A12]"
           >
-            <Icon name={menuOpen ? "close" : "menu"} />
+            <Icon name={menuOpen ? "close" : "menu"} size={25} />
           </button>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => onNavigate("home")}
+          aria-label="Retour à l’accueil"
+          className="text-[#0B0A12]"
+        >
+          <Logo mark={active.mark} style={{ fontSize: "2.15rem" }} />
+        </button>
+
+        <div className="flex justify-end gap-2">
           <button
             type="button"
             onClick={() => {
@@ -31,22 +43,10 @@ function Header({ currentPage, onNavigate, menuOpen, setMenuOpen, cartOpen, setC
               setCartOpen(false);
             }}
             aria-label="Ouvrir le menu du compte"
-            className="p-2 text-[#0B0A12]/80 transition hover:bg-white/40 hover:text-[#0B0A12]"
+            className="p-3 text-[#0B0A12]/80 transition hover:bg-white/40 hover:text-[#0B0A12]"
           >
-            <Icon name="user" />
+            <Icon name="user" size={25} />
           </button>
-        </div>
-
-        <button
-          type="button"
-          onClick={() => onNavigate("home")}
-          aria-label="Retour à l’accueil"
-          className="text-4xl text-[#0B0A12] md:text-5xl"
-        >
-          <Logo mark={active.mark} />
-        </button>
-
-        <div className="flex justify-end">
           <button
             type="button"
             aria-label="Ouvrir le panier"
@@ -55,9 +55,9 @@ function Header({ currentPage, onNavigate, menuOpen, setMenuOpen, cartOpen, setC
               setMenuOpen(false);
               setAccountOpen(false);
             }}
-            className="relative p-2 text-[#0B0A12]/80 transition hover:bg-white/40 hover:text-[#0B0A12]"
+            className="relative p-3 text-[#0B0A12]/80 transition hover:bg-white/40 hover:text-[#0B0A12]"
           >
-            <Icon name="bag" />
+            <Icon name="bag" size={25} />
             {cartCount > 0 ? (
               <span className="absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full bg-[#0B0A12] px-1 text-[10px] text-[#FCFCF7]">
                 {cartCount}

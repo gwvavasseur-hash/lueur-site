@@ -169,27 +169,6 @@ function HomePage({ onNavigate, onOpenBook, onSaveFragment, savedFragmentIds }) 
         </div>
       </section>
 
-      <section className="px-5 py-24 md:px-10 md:py-28">
-        <div className="mx-auto grid max-w-7xl gap-12 border border-white/45 bg-white/42 p-8 shadow-[0_25px_90px_rgba(10,10,18,0.05)] backdrop-blur-2xl md:grid-cols-[1fr_1fr] md:p-14">
-          <div>
-            <p className="text-xs uppercase tracking-[0.32em] text-[#68645C]">expérience gratuite</p>
-            <h2 className="mt-5 font-serif text-5xl leading-none tracking-[-0.06em] md:text-7xl">Écris un livre. Reçois une lueur.</h2>
-          </div>
-          <div className="flex flex-col justify-end">
-            <p className="text-lg leading-8 text-[#55524B]">
-              Une citation, une pensée, une question et une petite action à garder.
-            </p>
-            <button
-              type="button"
-              onClick={() => onNavigate("lueur")}
-              className="mt-8 w-fit bg-[#0B0A12] px-7 py-4 text-sm uppercase tracking-[0.18em] text-[#FCFCF7] transition hover:bg-[#282433]"
-            >
-              Recevoir ma lueur
-            </button>
-          </div>
-        </div>
-      </section>
-
       <section className="px-5 py-20 md:px-10 md:py-28">
         <div className="mx-auto max-w-7xl">
           <div className="mb-10 flex flex-col justify-between gap-6 md:flex-row md:items-end">

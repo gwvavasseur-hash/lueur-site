@@ -28,9 +28,9 @@ function Footer({ onNavigate }) {
           <div>
             <p className="text-xs uppercase tracking-[0.28em] text-[#68645C]">Informations</p>
             <div className="mt-5 space-y-3 text-sm text-[#4F4B44]">
-              <a href="mailto:contact@lueur.fr" className="block hover:text-[#0B0A12]">Contact</a>
-              <button type="button" className="block hover:text-[#0B0A12]">Mentions légales</button>
-              <button type="button" className="block hover:text-[#0B0A12]">Confidentialité</button>
+              <button type="button" onClick={() => onNavigate("contact")} className="block hover:text-[#0B0A12]">Contact</button>
+              <button type="button" onClick={() => onNavigate("legal")} className="block hover:text-[#0B0A12]">Mentions légales</button>
+              <button type="button" onClick={() => onNavigate("privacy")} className="block hover:text-[#0B0A12]">Confidentialité</button>
             </div>
           </div>
         </div>
