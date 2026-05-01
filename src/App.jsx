@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import AccountMenu from "./components/AccountMenu";
 import CartPreview from "./components/CartPreview";
@@ -6,11 +6,8 @@ import Footer from "./components/Footer";
 import Header from "./components/Header";
 import MenuOverlay from "./components/MenuOverlay";
 import { books } from "./data/books";
-import { digitalProducts } from "./data/digitalProducts";
-import { fragments } from "./data/fragments";
-import { pages } from "./data/pages";
-import { reviews } from "./data/reviews";
 import AboutPage from "./pages/AboutPage";
+import AuthPage from "./pages/AuthPage";
 import BookPage from "./pages/BookPage";
 import CheckoutPage from "./pages/CheckoutPage";
 import ContactPage from "./pages/ContactPage";
@@ -22,21 +19,17 @@ import LegalPage from "./pages/LegalPage";
 import LueurGeneratorPage from "./pages/LueurGeneratorPage";
 import MemberPage from "./pages/MemberPage";
 import PrivacyPage from "./pages/PrivacyPage";
+import { supabase } from "./lib/supabase";
+import {
+  deleteCartItem,
+  insertSavedAction,
+  insertSavedReflection,
+  loadMemberData,
+  syncGuestData,
+  upsertCartItem,
+  upsertSavedFragment,
+} from "./services/memberData";
 import { parsePrice } from "./utils/price";
-
-export function validateBooks(items = books) {
-  return Array.isArray(items) && items.length > 0 && items.every((item) => Boolean(item.id && item.title && item.quote && item.price));
-}
-
-export const componentTests = [
-  { name: "books data is valid", passed: validateBooks(books) },
-  { name: "fragments link to existing books", passed: fragments.every((fragment) => books.some((book) => book.id === fragment.bookId)) },
-  { name: "main navigation exposes about page", passed: pages.some((page) => page.id === "about") },
-  { name: "digital products include a free lead magnet", passed: digitalProducts.some((product) => product.price === "0 €") },
-  { name: "every fragment has a save id", passed: fragments.every((fragment) => Boolean(fragment.id)) },
-  { name: "reviews use structured testimonial data", passed: reviews.every((review) => Boolean(review.name && review.context && review.text && review.result)) },
-  { name: "books include commerce page details", passed: books.every((book) => Boolean(book.description && book.idealFor && book.includes?.length && book.details?.length && book.legal)) },
-];
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState("home");
@@ -48,10 +41,84 @@ export default function App() {
   const [savedFragments, setSavedFragments] = useState([]);
   const [savedReflections, setSavedReflections] = useState([]);
   const [savedActions, setSavedActions] = useState([]);
+  const [session, setSession] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
+  const [dataLoading, setDataLoading] = useState(false);
+  const [dataError, setDataError] = useState("");
+  const guestDataRef = useRef({ savedFragments: [], savedReflections: [], savedActions: [], cartItems: [] });
 
   const selectedBook = useMemo(() => books.find((book) => book.id === selectedBookId) || books[0], [selectedBookId]);
   const savedFragmentIds = useMemo(() => savedFragments.map((fragment) => fragment.id), [savedFragments]);
   const cartTotal = useMemo(() => cartItems.reduce((sum, item) => sum + parsePrice(item.price), 0), [cartItems]);
+  const user = session?.user || null;
+
+  useEffect(() => {
+    guestDataRef.current = { savedFragments, savedReflections, savedActions, cartItems };
+  }, [savedFragments, savedReflections, savedActions, cartItems]);
+
+  useEffect(() => {
+    if (!supabase) {
+      setAuthLoading(false);
+      return undefined;
+    }
+
+    let mounted = true;
+
+    supabase.auth.getSession().then(({ data }) => {
+      if (!mounted) return;
+      setSession(data.session);
+      setAuthLoading(false);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+      setSession(nextSession);
+      setAuthLoading(false);
+    });
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!user?.id) return undefined;
+
+    let cancelled = false;
+
+    async function hydrateMemberData() {
+      setDataLoading(true);
+      setDataError("");
+
+      try {
+        await syncGuestData(user.id, guestDataRef.current);
+        const data = await loadMemberData(user.id);
+        if (cancelled) return;
+
+        setSavedFragments(data.savedFragments);
+        setSavedReflections(data.savedReflections);
+        setSavedActions(data.savedActions);
+        setCartItems(data.cartItems);
+      } catch (error) {
+        if (!cancelled) {
+          setDataError("Impossible de charger tes données pour l’instant. Vérifie que les tables Supabase sont bien créées.");
+        }
+        console.error(error);
+      } finally {
+        if (!cancelled) {
+          setDataLoading(false);
+        }
+      }
+    }
+
+    hydrateMemberData();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id]);
 
   function navigate(pageId) {
     setCurrentPage(pageId);
@@ -68,7 +135,7 @@ export default function App() {
     navigate("book");
   }
 
-  function addToCart(item) {
+  async function addToCart(item) {
     setCartItems((previousItems) => {
       if (previousItems.some((previousItem) => previousItem.id === item.id && previousItem.category === item.category)) {
         return previousItems;
@@ -78,27 +145,87 @@ export default function App() {
     setCartOpen(true);
     setMenuOpen(false);
     setAccountOpen(false);
+
+    if (user?.id) {
+      try {
+        await upsertCartItem(user.id, item);
+      } catch (error) {
+        setDataError("Le panier n’a pas pu être sauvegardé.");
+        console.error(error);
+      }
+    }
   }
 
-  function removeFromCart(id, category) {
+  async function removeFromCart(id, category) {
     setCartItems((previousItems) => previousItems.filter((item) => !(item.id === id && item.category === category)));
+
+    if (user?.id) {
+      try {
+        await deleteCartItem(user.id, id, category);
+      } catch (error) {
+        setDataError("Le panier n’a pas pu être mis à jour.");
+        console.error(error);
+      }
+    }
   }
 
-  function saveFragment(fragment) {
+  async function saveFragment(fragment) {
     setSavedFragments((previousFragments) => {
       if (previousFragments.some((previousFragment) => previousFragment.id === fragment.id)) {
         return previousFragments;
       }
       return [...previousFragments, fragment];
     });
+
+    if (user?.id) {
+      try {
+        await upsertSavedFragment(user.id, fragment);
+      } catch (error) {
+        setDataError("Le fragment n’a pas pu être sauvegardé.");
+        console.error(error);
+      }
+    }
   }
 
-  function saveReflection(reflection) {
+  async function saveReflection(reflection) {
     setSavedReflections((previousReflections) => [reflection, ...previousReflections]);
+
+    if (user?.id) {
+      try {
+        await insertSavedReflection(user.id, reflection);
+      } catch (error) {
+        setDataError("La réponse n’a pas pu être sauvegardée.");
+        console.error(error);
+      }
+    }
   }
 
-  function commitAction(action) {
+  async function commitAction(action) {
     setSavedActions((previousActions) => [action, ...previousActions]);
+
+    if (user?.id) {
+      try {
+        await insertSavedAction(user.id, action);
+      } catch (error) {
+        setDataError("L’action n’a pas pu être sauvegardée.");
+        console.error(error);
+      }
+    }
+  }
+
+  async function signOut() {
+    if (supabase) {
+      await supabase.auth.signOut();
+    }
+    setSession(null);
+    setSavedFragments([]);
+    setSavedReflections([]);
+    setSavedActions([]);
+    setCartItems([]);
+    setMenuOpen(false);
+    setAccountOpen(false);
+    setCartOpen(false);
+    navigate("home");
   }
 
   return (
@@ -131,7 +258,7 @@ export default function App() {
         setAccountOpen={setAccountOpen}
       />
       <MenuOverlay open={menuOpen} onNavigate={navigate} />
-      <AccountMenu open={accountOpen} onNavigate={navigate} />
+      <AccountMenu open={accountOpen} onNavigate={navigate} user={user} onSignOut={signOut} />
       <CartPreview open={cartOpen} cartItems={cartItems} total={cartTotal} onNavigate={navigate} onRemove={removeFromCart} />
 
       {currentPage === "home" ? <HomePage onNavigate={navigate} onOpenBook={openBook} onSaveFragment={saveFragment} savedFragmentIds={savedFragmentIds} /> : null}
@@ -139,8 +266,22 @@ export default function App() {
       {currentPage === "library" ? <LibraryPage onOpenBook={openBook} /> : null}
       {currentPage === "fragments" ? <FragmentsPage onOpenBook={openBook} onSaveFragment={saveFragment} savedFragmentIds={savedFragmentIds} /> : null}
       {currentPage === "digital" ? <DigitalPage onAddToCart={addToCart} /> : null}
-      {currentPage === "member" ? <MemberPage savedFragments={savedFragments} savedReflections={savedReflections} savedActions={savedActions} onNavigate={navigate} /> : null}
+      {currentPage === "member" ? (
+        <MemberPage
+          savedFragments={savedFragments}
+          savedReflections={savedReflections}
+          savedActions={savedActions}
+          onNavigate={navigate}
+          user={user}
+          onSignOut={signOut}
+          authLoading={authLoading}
+          dataLoading={dataLoading}
+          dataError={dataError}
+        />
+      ) : null}
       {currentPage === "about" ? <AboutPage /> : null}
+      {currentPage === "signin" ? <AuthPage mode="signin" onNavigate={navigate} /> : null}
+      {currentPage === "signup" ? <AuthPage mode="signup" onNavigate={navigate} /> : null}
       {currentPage === "contact" ? <ContactPage /> : null}
       {currentPage === "legal" ? <LegalPage onNavigate={navigate} /> : null}
       {currentPage === "privacy" ? <PrivacyPage onNavigate={navigate} /> : null}
