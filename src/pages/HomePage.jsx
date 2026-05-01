@@ -1,4 +1,6 @@
+import { books } from "../data/books";
 import { fragments } from "../data/fragments";
+import { reviews } from "../data/reviews";
 import Icon from "../components/Icon";
 import NewsletterBlock from "../components/NewsletterBlock";
 import SaveButton from "../components/SaveButton";
