@@ -300,6 +300,24 @@ export default function App() {
     }
   }
 
+  async function handlePaymentSuccess() {
+    const paidCartItems = [...cartItems];
+
+    setCartItems([]);
+    setCartOpen(false);
+    setDataError("");
+    setDataStatus("Paiement confirmé. Ton panier est prêt à être transformé en accès membre.");
+
+    if (user?.id) {
+      try {
+        await Promise.all(paidCartItems.map((item) => deleteCartItem(user.id, item.id, item.category)));
+      } catch (error) {
+        setDataError(`Le panier payé n’a pas pu être vidé du compte : ${error.message}`);
+        console.error(error);
+      }
+    }
+  }
+
   async function signOut() {
     if (supabase) {
       await supabase.auth.signOut();
@@ -380,7 +398,15 @@ export default function App() {
       {currentPage === "legal" ? <LegalPage onNavigate={navigate} /> : null}
       {currentPage === "privacy" ? <PrivacyPage onNavigate={navigate} /> : null}
       {currentPage === "book" ? <BookPage book={selectedBook} onNavigate={navigate} onAddToCart={addToCart} /> : null}
-      {currentPage === "checkout" ? <CheckoutPage cartItems={cartItems} total={cartTotal} onNavigate={navigate} onRemove={removeFromCart} /> : null}
+      {currentPage === "checkout" ? (
+        <CheckoutPage
+          cartItems={cartItems}
+          total={cartTotal}
+          onNavigate={navigate}
+          onPaymentSuccess={handlePaymentSuccess}
+          onRemove={removeFromCart}
+        />
+      ) : null}
 
       <Footer onNavigate={navigate} />
     </main>

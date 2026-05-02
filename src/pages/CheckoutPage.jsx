@@ -1,26 +1,52 @@
-import PageShell from "../components/PageShell";
+import { useState } from "react";
 
-function CheckoutPage({ cartItems, total, onNavigate, onRemove }) {
+import PageShell from "../components/PageShell";
+import PayPalCheckout from "../components/PayPalCheckout";
+
+function CheckoutPage({ cartItems, total, onNavigate, onPaymentSuccess, onRemove }) {
+  const [customer, setCustomer] = useState({
+    firstName: "",
+    email: "",
+    promoCode: "",
+  });
+  const paymentDisabled = cartItems.length === 0 || total <= 0;
+
+  function updateCustomer(field, value) {
+    setCustomer((previousCustomer) => ({ ...previousCustomer, [field]: value }));
+  }
+
   return (
     <PageShell eyebrow="commande" title="Finaliser ton panier.">
       <div className="mx-auto grid max-w-7xl min-w-0 gap-6 md:grid-cols-[1fr_0.8fr] md:gap-8">
         <section className="min-w-0 border border-white/45 bg-white/42 p-5 shadow-[0_18px_70px_rgba(10,10,18,0.04)] backdrop-blur-xl md:p-10">
           <p className="text-[10px] uppercase tracking-[0.2em] text-[#68645C] md:text-xs md:tracking-[0.28em]">informations</p>
           <div className="mt-8 grid gap-4">
-            <input className="border border-[#0B0A12]/10 bg-[#FCFCF7]/70 p-4 outline-none" placeholder="Prénom" />
-            <input className="border border-[#0B0A12]/10 bg-[#FCFCF7]/70 p-4 outline-none" placeholder="Adresse email" />
-            <input className="border border-[#0B0A12]/10 bg-[#FCFCF7]/70 p-4 outline-none" placeholder="Code promo" />
+            <input
+              value={customer.firstName}
+              onChange={(event) => updateCustomer("firstName", event.target.value)}
+              className="border border-[#0B0A12]/10 bg-[#FCFCF7]/70 p-4 outline-none"
+              placeholder="Prénom"
+            />
+            <input
+              value={customer.email}
+              onChange={(event) => updateCustomer("email", event.target.value)}
+              className="border border-[#0B0A12]/10 bg-[#FCFCF7]/70 p-4 outline-none"
+              placeholder="Adresse email"
+            />
+            <input
+              value={customer.promoCode}
+              onChange={(event) => updateCustomer("promoCode", event.target.value)}
+              className="border border-[#0B0A12]/10 bg-[#FCFCF7]/70 p-4 outline-none"
+              placeholder="Code promo"
+            />
           </div>
-          <div className="mt-8 border border-[#0B0A12]/10 bg-[#FCFCF7]/60 p-5 text-sm leading-7 text-[#55524B]">
-            Dans la version finale, ce bouton sera relié à Stripe ou à une solution équivalente. La livraison des PDF et produits numériques se fera par email et dans l’espace membre.
-          </div>
-          <button
-            type="button"
-            disabled={cartItems.length === 0}
-            className="mt-8 w-full bg-[#0B0A12] px-5 py-4 text-xs uppercase tracking-[0.12em] text-[#FCFCF7] disabled:cursor-not-allowed disabled:bg-[#0B0A12]/30 md:px-7 md:text-sm md:tracking-[0.18em]"
-          >
-            Commander · {total.toFixed(2).replace(".", ",")} €
-          </button>
+          <PayPalCheckout
+            cartItems={cartItems}
+            customer={customer}
+            disabled={paymentDisabled}
+            total={total}
+            onPaymentSuccess={onPaymentSuccess}
+          />
         </section>
 
         <aside className="min-w-0 border border-white/45 bg-white/42 p-5 shadow-[0_18px_70px_rgba(10,10,18,0.04)] backdrop-blur-xl md:p-10">
