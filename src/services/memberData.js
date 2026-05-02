@@ -103,13 +103,15 @@ export async function insertSavedReflection(userId, reflection) {
   );
 }
 
-export async function updateSavedReflection(userId, reflectionId, answer) {
+export async function updateSavedReflection(userId, reflection) {
   assertSupabase();
 
   return throwIfError(
-    await supabase.rpc("update_member_reflection", {
-      p_local_id: reflectionId,
-      p_answer: answer,
+    await supabase.rpc("save_member_reflection", {
+      p_local_id: reflection.id,
+      p_book: reflection.book,
+      p_question: reflection.question,
+      p_answer: reflection.answer,
     }),
   );
 }

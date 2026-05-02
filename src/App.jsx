@@ -214,13 +214,18 @@ export default function App() {
   }
 
   async function editReflection(reflectionId, answer) {
+    const existingReflection = savedReflections.find((reflection) => reflection.id === reflectionId);
+    if (!existingReflection) return;
+
+    const updatedReflection = { ...existingReflection, answer };
+
     setSavedReflections((previousReflections) =>
-      previousReflections.map((reflection) => (reflection.id === reflectionId ? { ...reflection, answer } : reflection)),
+      previousReflections.map((reflection) => (reflection.id === reflectionId ? updatedReflection : reflection)),
     );
 
     if (user?.id) {
       try {
-        await updateSavedReflection(user.id, reflectionId, answer);
+        await updateSavedReflection(user.id, updatedReflection);
         setDataError("");
         setDataStatus("Réponse modifiée dans ton compte.");
       } catch (error) {
