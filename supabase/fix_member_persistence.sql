@@ -51,6 +51,7 @@ on public.cart_items for delete
 to authenticated
 using (auth.uid() = user_id);
 
+drop function if exists public.save_member_action(text, text, text, text);
 create or replace function public.save_member_action(
   p_local_id text,
   p_book text,
@@ -79,6 +80,7 @@ begin
 end;
 $$;
 
+drop function if exists public.save_cart_item(text, text, text, text, text);
 create or replace function public.save_cart_item(
   p_item_id text,
   p_category text,
@@ -108,6 +110,7 @@ begin
 end;
 $$;
 
+drop function if exists public.delete_cart_item(text, text);
 create or replace function public.delete_cart_item(
   p_item_id text,
   p_category text
@@ -134,3 +137,15 @@ $$;
 grant execute on function public.save_member_action(text, text, text, text) to authenticated;
 grant execute on function public.save_cart_item(text, text, text, text, text) to authenticated;
 grant execute on function public.delete_cart_item(text, text) to authenticated;
+
+notify pgrst, 'reload schema';
+
+select
+  n.nspname as schema,
+  p.proname as function_name,
+  p.proargnames as argument_names
+from pg_proc p
+join pg_namespace n on n.oid = p.pronamespace
+where n.nspname = 'public'
+  and p.proname in ('save_member_action', 'save_cart_item', 'delete_cart_item')
+order by p.proname;
