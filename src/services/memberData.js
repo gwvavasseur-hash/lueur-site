@@ -110,15 +110,12 @@ export async function insertSavedReflection(userId, reflection) {
 export async function insertSavedAction(userId, action) {
   assertSupabase();
 
-  await throwIfError(await supabase.from("saved_actions").delete().eq("user_id", userId).eq("local_id", action.id));
-
   return throwIfError(
-    await supabase.from("saved_actions").insert({
-      user_id: userId,
-      local_id: action.id,
-      book: action.book,
-      text: action.text,
-      status: action.status,
+    await supabase.rpc("save_member_action", {
+      p_local_id: action.id,
+      p_book: action.book,
+      p_text: action.text,
+      p_status: action.status,
     }),
   );
 }
@@ -126,23 +123,13 @@ export async function insertSavedAction(userId, action) {
 export async function upsertCartItem(userId, item) {
   assertSupabase();
 
-  await throwIfError(
-    await supabase
-      .from("cart_items")
-      .delete()
-      .eq("user_id", userId)
-      .eq("item_id", item.id)
-      .eq("category", item.category),
-  );
-
   return throwIfError(
-    await supabase.from("cart_items").insert({
-      user_id: userId,
-      item_id: item.id,
-      category: item.category,
-      title: item.title,
-      price: item.price,
-      type: item.type,
+    await supabase.rpc("save_cart_item", {
+      p_item_id: item.id,
+      p_category: item.category,
+      p_title: item.title,
+      p_price: item.price,
+      p_type: item.type,
     }),
   );
 }
@@ -151,12 +138,10 @@ export async function deleteCartItem(userId, id, category) {
   assertSupabase();
 
   return throwIfError(
-    await supabase
-      .from("cart_items")
-      .delete()
-      .eq("user_id", userId)
-      .eq("item_id", id)
-      .eq("category", category),
+    await supabase.rpc("delete_cart_item", {
+      p_item_id: id,
+      p_category: category,
+    }),
   );
 }
 
