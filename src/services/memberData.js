@@ -94,16 +94,33 @@ export async function insertSavedReflection(userId, reflection) {
   assertSupabase();
 
   return throwIfError(
-    await supabase.from("saved_reflections").upsert(
-      {
-        user_id: userId,
-        local_id: reflection.id,
-        book: reflection.book,
-        question: reflection.question,
-        answer: reflection.answer,
-      },
-      { onConflict: "user_id,local_id" },
-    ),
+    await supabase.rpc("save_member_reflection", {
+      p_local_id: reflection.id,
+      p_book: reflection.book,
+      p_question: reflection.question,
+      p_answer: reflection.answer,
+    }),
+  );
+}
+
+export async function updateSavedReflection(userId, reflectionId, answer) {
+  assertSupabase();
+
+  return throwIfError(
+    await supabase.rpc("update_member_reflection", {
+      p_local_id: reflectionId,
+      p_answer: answer,
+    }),
+  );
+}
+
+export async function deleteSavedReflection(userId, reflectionId) {
+  assertSupabase();
+
+  return throwIfError(
+    await supabase.rpc("delete_member_reflection", {
+      p_local_id: reflectionId,
+    }),
   );
 }
 
@@ -116,6 +133,26 @@ export async function insertSavedAction(userId, action) {
       p_book: action.book,
       p_text: action.text,
       p_status: action.status,
+    }),
+  );
+}
+
+export async function deleteSavedAction(userId, actionId) {
+  assertSupabase();
+
+  return throwIfError(
+    await supabase.rpc("delete_member_action", {
+      p_local_id: actionId,
+    }),
+  );
+}
+
+export async function deleteSavedFragment(userId, fragmentId) {
+  assertSupabase();
+
+  return throwIfError(
+    await supabase.rpc("delete_saved_fragment", {
+      p_fragment_id: fragmentId,
     }),
   );
 }

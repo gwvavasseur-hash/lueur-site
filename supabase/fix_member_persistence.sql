@@ -52,7 +52,7 @@ to authenticated
 using (auth.uid() = user_id);
 
 drop function if exists public.save_member_action(text, text, text, text);
-create or replace function public.save_member_action(
+create function public.save_member_action(
   p_local_id text,
   p_book text,
   p_text text,
@@ -62,10 +62,12 @@ returns void
 language plpgsql
 security definer
 set search_path = public
-as $$
+as $function$
 declare
-  current_user_id uuid := auth.uid();
+  current_user_id uuid;
 begin
+  current_user_id := auth.uid();
+
   if current_user_id is null then
     raise exception 'Not authenticated';
   end if;
@@ -78,10 +80,139 @@ begin
     text = excluded.text,
     status = excluded.status;
 end;
-$$;
+$function$;
+
+drop function if exists public.delete_member_action(text);
+create function public.delete_member_action(
+  p_local_id text
+)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $function$
+declare
+  current_user_id uuid;
+begin
+  current_user_id := auth.uid();
+
+  if current_user_id is null then
+    raise exception 'Not authenticated';
+  end if;
+
+  delete from public.saved_actions
+  where user_id = current_user_id
+    and local_id = p_local_id;
+end;
+$function$;
+
+drop function if exists public.save_member_reflection(text, text, text, text);
+create function public.save_member_reflection(
+  p_local_id text,
+  p_book text,
+  p_question text,
+  p_answer text
+)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $function$
+declare
+  current_user_id uuid;
+begin
+  current_user_id := auth.uid();
+
+  if current_user_id is null then
+    raise exception 'Not authenticated';
+  end if;
+
+  insert into public.saved_reflections (user_id, local_id, book, question, answer)
+  values (current_user_id, p_local_id, p_book, p_question, p_answer)
+  on conflict (user_id, local_id)
+  do update set
+    book = excluded.book,
+    question = excluded.question,
+    answer = excluded.answer;
+end;
+$function$;
+
+drop function if exists public.update_member_reflection(text, text);
+create function public.update_member_reflection(
+  p_local_id text,
+  p_answer text
+)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $function$
+declare
+  current_user_id uuid;
+begin
+  current_user_id := auth.uid();
+
+  if current_user_id is null then
+    raise exception 'Not authenticated';
+  end if;
+
+  update public.saved_reflections
+  set answer = p_answer
+  where user_id = current_user_id
+    and local_id = p_local_id;
+end;
+$function$;
+
+drop function if exists public.delete_member_reflection(text);
+create function public.delete_member_reflection(
+  p_local_id text
+)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $function$
+declare
+  current_user_id uuid;
+begin
+  current_user_id := auth.uid();
+
+  if current_user_id is null then
+    raise exception 'Not authenticated';
+  end if;
+
+  delete from public.saved_reflections
+  where user_id = current_user_id
+    and local_id = p_local_id;
+end;
+$function$;
+
+drop function if exists public.delete_saved_fragment(text);
+create function public.delete_saved_fragment(
+  p_fragment_id text
+)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $function$
+declare
+  current_user_id uuid;
+begin
+  current_user_id := auth.uid();
+
+  if current_user_id is null then
+    raise exception 'Not authenticated';
+  end if;
+
+  delete from public.saved_fragments
+  where user_id = current_user_id
+    and fragment_id = p_fragment_id;
+end;
+$function$;
 
 drop function if exists public.save_cart_item(text, text, text, text, text);
-create or replace function public.save_cart_item(
+create function public.save_cart_item(
   p_item_id text,
   p_category text,
   p_title text,
@@ -92,10 +223,12 @@ returns void
 language plpgsql
 security definer
 set search_path = public
-as $$
+as $function$
 declare
-  current_user_id uuid := auth.uid();
+  current_user_id uuid;
 begin
+  current_user_id := auth.uid();
+
   if current_user_id is null then
     raise exception 'Not authenticated';
   end if;
@@ -108,10 +241,10 @@ begin
     price = excluded.price,
     type = excluded.type;
 end;
-$$;
+$function$;
 
 drop function if exists public.delete_cart_item(text, text);
-create or replace function public.delete_cart_item(
+create function public.delete_cart_item(
   p_item_id text,
   p_category text
 )
@@ -119,10 +252,12 @@ returns void
 language plpgsql
 security definer
 set search_path = public
-as $$
+as $function$
 declare
-  current_user_id uuid := auth.uid();
+  current_user_id uuid;
 begin
+  current_user_id := auth.uid();
+
   if current_user_id is null then
     raise exception 'Not authenticated';
   end if;
@@ -132,20 +267,15 @@ begin
     and item_id = p_item_id
     and category = p_category;
 end;
-$$;
+$function$;
 
 grant execute on function public.save_member_action(text, text, text, text) to authenticated;
+grant execute on function public.delete_member_action(text) to authenticated;
+grant execute on function public.save_member_reflection(text, text, text, text) to authenticated;
+grant execute on function public.update_member_reflection(text, text) to authenticated;
+grant execute on function public.delete_member_reflection(text) to authenticated;
+grant execute on function public.delete_saved_fragment(text) to authenticated;
 grant execute on function public.save_cart_item(text, text, text, text, text) to authenticated;
 grant execute on function public.delete_cart_item(text, text) to authenticated;
 
 notify pgrst, 'reload schema';
-
-select
-  n.nspname as schema,
-  p.proname as function_name,
-  p.proargnames as argument_names
-from pg_proc p
-join pg_namespace n on n.oid = p.pronamespace
-where n.nspname = 'public'
-  and p.proname in ('save_member_action', 'save_cart_item', 'delete_cart_item')
-order by p.proname;

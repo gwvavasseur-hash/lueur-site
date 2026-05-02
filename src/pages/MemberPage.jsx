@@ -1,6 +1,24 @@
+import { useState } from "react";
 import PageShell from "../components/PageShell";
 
-function MemberPage({ savedFragments, savedReflections, savedActions, cartItems, onNavigate, user, onSignOut, authLoading, dataLoading, dataError, dataStatus }) {
+function MemberPage({
+  savedFragments,
+  savedReflections,
+  savedActions,
+  cartItems,
+  onRemoveFragment,
+  onRemoveReflection,
+  onEditReflection,
+  onRemoveAction,
+  onRemoveCartItem,
+  onNavigate,
+  user,
+  onSignOut,
+  authLoading,
+  dataLoading,
+  dataError,
+  dataStatus,
+}) {
   return (
     <PageShell eyebrow="lueur member" title="Ton espace pour garder ce qui mérite de rester.">
       <div className="mx-auto mb-6 max-w-7xl">
@@ -22,8 +40,11 @@ function MemberPage({ savedFragments, savedReflections, savedActions, cartItems,
       <div className="mx-auto grid max-w-7xl min-w-0 gap-5 lg:grid-cols-[1.05fr_1.05fr_0.9fr]">
         <MemberModule title="Fragments enregistrés" label="module 01" empty="Aucun fragment enregistré pour l’instant.">
           {savedFragments.map((fragment) => (
-            <div key={fragment.id} className="border border-[#0B0A12]/10 bg-white/45 p-4">
-              <p className="text-xs uppercase tracking-[0.24em] text-[#68645C]">{fragment.mood}</p>
+            <div key={fragment.id} className="relative border border-[#0B0A12]/10 bg-white/45 p-4">
+              <button type="button" onClick={() => onRemoveFragment(fragment.id)} className="absolute right-3 top-3 text-xs uppercase tracking-[0.14em] text-[#68645C] transition hover:text-[#0B0A12]">
+                supprimer
+              </button>
+              <p className="pr-24 text-xs uppercase tracking-[0.24em] text-[#68645C]">{fragment.mood}</p>
               <p className="mt-3 font-serif text-2xl leading-tight tracking-[-0.04em]">“{fragment.text}”</p>
             </div>
           ))}
@@ -31,19 +52,23 @@ function MemberPage({ savedFragments, savedReflections, savedActions, cartItems,
 
         <MemberModule title="Réponses personnelles" label="module 02" empty="Aucune réponse enregistrée pour l’instant.">
           {savedReflections.map((reflection) => (
-            <div key={reflection.id} className="border border-[#0B0A12]/10 bg-white/45 p-4">
-              <p className="text-xs uppercase tracking-[0.24em] text-[#68645C]">{reflection.book}</p>
-              <p className="mt-3 leading-7 text-[#55524B]">{reflection.question}</p>
-              <p className="mt-3 font-serif text-2xl leading-tight tracking-[-0.04em]">{reflection.answer}</p>
-            </div>
+            <ReflectionItem
+              key={reflection.id}
+              reflection={reflection}
+              onEditReflection={onEditReflection}
+              onRemoveReflection={onRemoveReflection}
+            />
           ))}
         </MemberModule>
 
         <div className="min-w-0 space-y-5">
           <MemberModule title="Actions engagées" label="module 03" empty="Aucune action enregistrée pour l’instant.">
             {savedActions.map((action) => (
-              <div key={action.id} className="border border-[#0B0A12]/10 bg-white/45 p-4">
-                <p className="text-xs uppercase tracking-[0.24em] text-[#68645C]">{action.status}</p>
+              <div key={action.id} className="relative border border-[#0B0A12]/10 bg-white/45 p-4">
+                <button type="button" onClick={() => onRemoveAction(action.id)} className="absolute right-3 top-3 text-xs uppercase tracking-[0.14em] text-[#68645C] transition hover:text-[#0B0A12]">
+                  supprimer
+                </button>
+                <p className="pr-24 text-xs uppercase tracking-[0.24em] text-[#68645C]">{action.status}</p>
                 <p className="mt-3 font-serif text-2xl leading-tight tracking-[-0.04em]">{action.text}</p>
               </div>
             ))}
@@ -51,8 +76,11 @@ function MemberPage({ savedFragments, savedReflections, savedActions, cartItems,
 
           <MemberModule title="Panier sauvegardé" label="module 04" empty="Aucun produit sauvegardé dans ton panier.">
             {cartItems.map((item) => (
-              <div key={`${item.category}-${item.id}`} className="border border-[#0B0A12]/10 bg-white/45 p-4">
-                <p className="text-xs uppercase tracking-[0.24em] text-[#68645C]">{item.type}</p>
+              <div key={`${item.category}-${item.id}`} className="relative border border-[#0B0A12]/10 bg-white/45 p-4">
+                <button type="button" onClick={() => onRemoveCartItem(item.id, item.category)} className="absolute right-3 top-3 text-xs uppercase tracking-[0.14em] text-[#68645C] transition hover:text-[#0B0A12]">
+                  supprimer
+                </button>
+                <p className="pr-24 text-xs uppercase tracking-[0.24em] text-[#68645C]">{item.type}</p>
                 <div className="mt-3 flex justify-between gap-4">
                   <p className="font-serif text-2xl leading-tight tracking-[-0.04em]">{item.title}</p>
                   <p className="shrink-0">{item.price}</p>
@@ -83,6 +111,60 @@ function MemberPage({ savedFragments, savedReflections, savedActions, cartItems,
         </div>
       </div>
     </PageShell>
+  );
+}
+
+function ReflectionItem({ reflection, onEditReflection, onRemoveReflection }) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [draftAnswer, setDraftAnswer] = useState(reflection.answer);
+
+  function saveEdit() {
+    const cleanAnswer = draftAnswer.trim();
+    if (!cleanAnswer) return;
+
+    onEditReflection(reflection.id, cleanAnswer);
+    setIsEditing(false);
+  }
+
+  function cancelEdit() {
+    setDraftAnswer(reflection.answer);
+    setIsEditing(false);
+  }
+
+  return (
+    <div className="border border-[#0B0A12]/10 bg-white/45 p-4">
+      <div className="flex items-start justify-between gap-4">
+        <p className="text-xs uppercase tracking-[0.24em] text-[#68645C]">{reflection.book}</p>
+        <div className="flex shrink-0 gap-3">
+          <button type="button" onClick={() => setIsEditing(true)} className="text-xs uppercase tracking-[0.14em] text-[#68645C] transition hover:text-[#0B0A12]">
+            modifier
+          </button>
+          <button type="button" onClick={() => onRemoveReflection(reflection.id)} className="text-xs uppercase tracking-[0.14em] text-[#68645C] transition hover:text-[#0B0A12]">
+            supprimer
+          </button>
+        </div>
+      </div>
+      <p className="mt-3 leading-7 text-[#55524B]">{reflection.question}</p>
+      {isEditing ? (
+        <div className="mt-3">
+          <textarea
+            value={draftAnswer}
+            onChange={(event) => setDraftAnswer(event.target.value)}
+            className="min-h-[120px] w-full border border-[#0B0A12]/10 bg-[#FCFCF7]/70 p-4 leading-7 outline-none"
+          />
+          <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+            <button type="button" onClick={saveEdit} className="bg-[#0B0A12] px-4 py-3 text-xs uppercase tracking-[0.12em] text-[#FCFCF7]">
+              Enregistrer
+            </button>
+            <button type="button" onClick={cancelEdit} className="border border-[#0B0A12]/10 px-4 py-3 text-xs uppercase tracking-[0.12em] text-[#0B0A12]">
+              Annuler
+            </button>
+          </div>
+        </div>
+      ) : (
+        <p className="mt-3 font-serif text-2xl leading-tight tracking-[-0.04em]">{reflection.answer}</p>
+      )}
+    </div>
   );
 }
 

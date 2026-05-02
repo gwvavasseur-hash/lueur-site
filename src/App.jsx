@@ -22,10 +22,14 @@ import PrivacyPage from "./pages/PrivacyPage";
 import { supabase } from "./lib/supabase";
 import {
   deleteCartItem,
+  deleteSavedAction,
+  deleteSavedFragment,
+  deleteSavedReflection,
   insertSavedAction,
   insertSavedReflection,
   loadMemberData,
   syncGuestData,
+  updateSavedReflection,
   upsertCartItem,
   upsertSavedFragment,
 } from "./services/memberData";
@@ -179,6 +183,68 @@ export default function App() {
     }
   }
 
+  async function removeFragment(fragmentId) {
+    setSavedFragments((previousFragments) => previousFragments.filter((fragment) => fragment.id !== fragmentId));
+
+    if (user?.id) {
+      try {
+        await deleteSavedFragment(user.id, fragmentId);
+        setDataError("");
+        setDataStatus("Fragment supprimé de ton compte.");
+      } catch (error) {
+        setDataError(`Le fragment n’a pas pu être supprimé : ${error.message}`);
+        console.error(error);
+      }
+    }
+  }
+
+  async function removeReflection(reflectionId) {
+    setSavedReflections((previousReflections) => previousReflections.filter((reflection) => reflection.id !== reflectionId));
+
+    if (user?.id) {
+      try {
+        await deleteSavedReflection(user.id, reflectionId);
+        setDataError("");
+        setDataStatus("Réponse supprimée de ton compte.");
+      } catch (error) {
+        setDataError(`La réponse n’a pas pu être supprimée : ${error.message}`);
+        console.error(error);
+      }
+    }
+  }
+
+  async function editReflection(reflectionId, answer) {
+    setSavedReflections((previousReflections) =>
+      previousReflections.map((reflection) => (reflection.id === reflectionId ? { ...reflection, answer } : reflection)),
+    );
+
+    if (user?.id) {
+      try {
+        await updateSavedReflection(user.id, reflectionId, answer);
+        setDataError("");
+        setDataStatus("Réponse modifiée dans ton compte.");
+      } catch (error) {
+        setDataError(`La réponse n’a pas pu être modifiée : ${error.message}`);
+        console.error(error);
+      }
+    }
+  }
+
+  async function removeAction(actionId) {
+    setSavedActions((previousActions) => previousActions.filter((action) => action.id !== actionId));
+
+    if (user?.id) {
+      try {
+        await deleteSavedAction(user.id, actionId);
+        setDataError("");
+        setDataStatus("Action supprimée de ton compte.");
+      } catch (error) {
+        setDataError(`L’action n’a pas pu être supprimée : ${error.message}`);
+        console.error(error);
+      }
+    }
+  }
+
   async function saveFragment(fragment) {
     setSavedFragments((previousFragments) => {
       if (previousFragments.some((previousFragment) => previousFragment.id === fragment.id)) {
@@ -288,6 +354,11 @@ export default function App() {
           savedReflections={savedReflections}
           savedActions={savedActions}
           cartItems={cartItems}
+          onRemoveFragment={removeFragment}
+          onRemoveReflection={removeReflection}
+          onEditReflection={editReflection}
+          onRemoveAction={removeAction}
+          onRemoveCartItem={removeFromCart}
           onNavigate={navigate}
           user={user}
           onSignOut={signOut}
